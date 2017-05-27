@@ -29,7 +29,10 @@ println("Nodes $(nodes), edges $(edges), terminals $(length(terminals))")
 # Constraints
 #############
 
-
+# Every terminal has to be connected?
+for t in terminals
+	@constraint(m, sum(x[:,t]) >= 1)
+end
 
 ###########
 # Objective
@@ -50,5 +53,18 @@ end
 # Sum of Sum does not work like this?
 #@objective(m, Min, sum( sum(adjMatrix[i,j] * x[i,j]  , j:1:nodes) , i=1:nodes))
 
+
+###################
+# Solve and Display
+##################
+
+status = solve(m)
+
+if status == :Infeasible
+	error("No solution found!")
+else
+	println("Objective value: ", getobjectivevalue(m))
+	println("x = \n", getvalue(x))
+end
 
 
