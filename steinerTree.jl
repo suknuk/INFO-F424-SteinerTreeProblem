@@ -1,13 +1,16 @@
 # Script accepts the first argument as file input
 inputFile = ARGS[1]
 
-println(inputFile)
-
 
 # Problem size
-nodes = 0
-edges = 0
-terminals = 0
+# var nodes		- how many nodes
+# var edges		- how many edges
+# var nbTerminals	- how many terminals
+# array terminals	- array of terminal numbers
+
+# Adjacency Matrix
+# matrix adjMatrix	- 2d matrix holding the graph data
+
 
 # State variable to determine the current read state of a STP format file
 # in the form of SECTION Comment/Graph/Terminals ... END
@@ -23,6 +26,7 @@ terminals = 0
 
 state = 0
 
+###############################
 # Open file and read every line
 f = open(inputFile)
 for ln in eachline(f)
@@ -59,16 +63,24 @@ for ln in eachline(f)
 	
 		# Check for Nodes line
 		elseif splitted[1] == "Nodes"
-			nodes = parse(Float64, "$(splitted[2])")
+			global nodes = parse(Int64, "$(splitted[2])")
 		
 		# Check for Edges line
 		elseif splitted[1] == "Edges"
-			edges = parse(Float64, "$(splitted[2])")
-		
+			global edges = parse(Int64, "$(splitted[2])")
+			# After reading edges, all info to create the Adjacency Matrix is here
+			global adjMatrix = spzeros(nodes,nodes)
+			
 		# Check for Edge point
 		elseif splitted[1] == "E"
-			# TODO
+			# Read Node numbers and weight
+			node1 = parse(Int64, "$(splitted[2])")	
+			node2 = parse(Int64, "$(splitted[3])")	
+			weight = parse(Int64, "$(splitted[4])")
 
+			# Add entry into Adjacency Matrix
+			adjMatrix[node1,node2] = weight
+			adjMatrix[node2,node1] = weight
 		end
 
 	###################
@@ -84,17 +96,20 @@ for ln in eachline(f)
 
 		# Check for Terminal line
 		elseif splitted[1] == "Terminals"
-			terminals = parse(Float64, "$(splitted[2])")	
-	
+			global nbTerminals = parse(Int64, "$(splitted[2])")	
+			global terminals = Int64[]			
+
 		# Check for Terminal node line
 		elseif splitted[1] == "T"
-			# TODO
-
+			# Push terminal number into array that hols all terminals
+			terminal = parse(Int64, "$(splitted[2])")	
+			push!(terminals, terminal)
 		end
 	end
 end
 
+# Close the input stream
 close(f)
 
-println("Nodes $(nodes), edges $(edges), terminals $(terminals)")
+println("Nodes $(nodes), edges $(edges), terminals $(length(terminals))")
 
