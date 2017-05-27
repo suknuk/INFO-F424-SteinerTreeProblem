@@ -5,6 +5,7 @@
 # a Steiner Tree Problem specified file
 #####################################################
 
+
 # The function creates the following global variables
 # Int64 nodes		- how many nodes
 # Int64 edges		- how many edges
@@ -76,8 +77,12 @@ function readArgumentFile(arguments)
 			elseif splitted[1] == "Edges"
 				global edges = parse(Int64, "$(splitted[2])")
 				# After reading edges, all info to create the Adjacency Matrix is here
-				global adjMatrix = spzeros(nodes,nodes)
-				
+				# We multiply by may Int32 - an abreviation for M
+				global adjMatrix = ones(nodes,nodes) * typemax(Int32)
+
+				# Maybe change to sparse matrix? Depending on iteration of constraints
+				# global adjMatrix = spzeros(nodes,nodes)
+
 			# Check for Edge point
 			elseif splitted[1] == "E"
 				# Read Node numbers and weight
