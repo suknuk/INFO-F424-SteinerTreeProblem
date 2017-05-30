@@ -1,5 +1,4 @@
 using JuMP
-using Cbc
 
 m = Model()
 
@@ -15,7 +14,6 @@ end
 readArgumentFile(ARGS)
 
 println("Nodes $(nodes), edges $(edges), terminals $(length(terminals))")
-#println("test1 : $(adjMatrix[:,:])")
 
 
 ###########
@@ -33,39 +31,45 @@ println("Nodes $(nodes), edges $(edges), terminals $(length(terminals))")
 #############
 
 ###
-# Keeping the similarity in the Binary Matrix
-# Not sure to let it?
-#=
-for i = 1:nodes
-	for j = 1:nodes
-		@constraint(m, x[i,j] == x[j,i])
-	end
-end=#
+# Multicommodity flow constraints
 
 ###
-# Every terminal has to be selected
-# Formulation P_{UC}
-# We could also do 'x[t,;] >= 1'
-for t in terminals
-	@constraint(m, sum(x[:,t]) >= 1)
+# Constraint 3.1
+for i = 1:nodes
+	incomingFlow = 0
+	outgoingFlow = 0
+	for j = 1:nodes
+		if i != j
+			incomingFlow += yt[j,i]
+			outgoingFlow += yt[i,j]
+		end
+	end
+
+	# First terminal node is the root node
+	# It has a outgoing flow of size(terminals) - 1
+	if i == terminals[1]
+		@constraint(m, outgoingFlow == length(terminals) - 1)
+
+	else
+		# Difference between incoming flow and outgoing flow
+		# 0 if non-terminal node
+		# 1 if terminal node - it 'consumes' one unit
+		flowDifference = 0
+		if in(i, terminals)
+			flowDifference = 1
+		end
+		@constraint(m, incomingFlow - outgoingFlow == flowDifference)
+	end
 end
 
-###
-# Multicommodity flow constraints
+
 for i = 1:nodes
 	for j = 1:nodes
 		###
-		# Constraint 3.1
-		# TODO
-		decision = 0
-		if in(i, terminals)
-			decision = 1
-		end
-		@constraint(m, yt[j,i] - yt[i,j] == decision)
-		
-		###
 		# Constraint 3.2
-		@constraint(m, x[i,j] >= yt[i,j])
+		# Multiply the binary value in order to allow a flow unit
+		# higher than one
+		@constraint(m, x[i,j]*typemax(Int16) >= yt[i,j])
 
 		###
 		# Constraint 3.3
@@ -86,8 +90,6 @@ function objectiveFunction()
 			total += x[i,j] * adjMatrix[i,j]
 		end
 	end
-	# Divide by two because we have a Adjacency Matrix -> maybe?
-	# total = total / 2
 	return total
 end
 
@@ -107,7 +109,8 @@ if status == :Infeasible
 	error("No solution found!")
 else
 	println("Objective value: ", getobjectivevalue(m))
-	println("x = \n", getvalue(x))
+	#println("x = \n", getvalue(x))
+	#println("yt = \n", getvalue(yt))
 end
 
 
