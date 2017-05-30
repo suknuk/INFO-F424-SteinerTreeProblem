@@ -29,15 +29,25 @@ println("Nodes $(nodes), edges $(edges), terminals $(length(terminals))")
 # Constraints
 #############
 
-# Every terminal has to be connected?
+# Every terminal has to be selected
+# Formulation P_{UC}
+# We could also do 'x[t,;] >= 1'
 for t in terminals
 	@constraint(m, sum(x[:,t]) >= 1)
+end
+
+# Keeping the similarity in the Binary Matrix
+for i = 1:nodes
+	for j = 1:nodes
+		@constraint(m, x[i,j] == x[j,i])
+	end
 end
 
 ###########
 # Objective
 ###########
 
+# Take the sum of each chosen weight
 function objectiveFunction()
 	total = 0
 	for i = 1:nodes	
@@ -45,6 +55,8 @@ function objectiveFunction()
 			total += x[i,j] * adjMatrix[i,j]
 		end
 	end
+	# Divide by two because we have a Adjacency Matrix
+	total = total / 2
 	return total
 end
 
@@ -56,7 +68,7 @@ end
 
 ###################
 # Solve and Display
-##################
+###################
 
 status = solve(m)
 
