@@ -48,7 +48,8 @@ for i = 1:nodes
 	# First terminal node is the root node
 	# It has a outgoing flow of size(terminals) - 1
 	if i == terminals[1]
-		@constraint(m, outgoingFlow == length(terminals) - 1)
+		# This constraint is done achieved even without this line
+		#@constraint(m, outgoingFlow == length(terminals) - 1)
 
 	else
 		# Difference between incoming flow and outgoing flow
