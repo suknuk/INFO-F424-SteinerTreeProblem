@@ -1,8 +1,10 @@
-# ##################################################
+#####################################################
 # Raymond Lochner 2017
-# the provided readArgumentFile() function creates
-# the required variables and a Adjacency Matrix from
-# a Steiner Tree Problem specified file
+# The provided readArgumentFile() function creates
+# the required variables and an Adjacency Matrix from
+# a Steiner Tree Problem (STP) specified file
+#
+# Does not check the validity of the STP file
 #####################################################
 
 
@@ -16,6 +18,11 @@
 
 
 function readArgumentFile(arguments)
+	
+	# argument length checking
+	if length(arguments) != 1
+		error("LALAExpected one argument: a Steiner Tree Problem - .stp - file")
+	end
 
 	# Script accepts the first argument as file input
 	inputFile = arguments[1]
@@ -121,7 +128,7 @@ function readArgumentFile(arguments)
 
 	# Close the input stream
 	close(f)
+
+	println("Input: Nodes $(nodes), edges $(edges), terminals $(length(terminals))")
 end
 # readArgumentFile end
-
-

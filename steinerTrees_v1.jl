@@ -1,3 +1,11 @@
+########################################################
+# Raymond Lochner 2017
+# Steiner Tree Problem formulation using the formulation
+# proposed by Wong (1984). This (PF) can be found in
+# page 244 of Polzin and Daneshmand (2001).
+########################################################
+
+
 using JuMP
 
 m = Model()
@@ -5,24 +13,18 @@ m = Model()
 # Include file to read STP files
 include("stpInterpreter.jl")
 
-# argument length checking
-if length(ARGS) != 1
-	error("Expected one argument: a Steiner Tree Problem - .stp - file")
-end
-
 # pass over arguments to interpret the Steiner problem
 readArgumentFile(ARGS)
-
-println("Nodes $(nodes), edges $(edges), terminals $(length(terminals))")
 
 
 ###########
 # Variables
 ###########
-#Binary variable to indicate if edge between nodes i and j was selected
+# Binary variable x to indicate if edge between nodes i and j was selected
+# Constraint 3.4
 @variable(m, x[1:nodes, 1:nodes], Bin)
 
-#Quantity of commodity t flowing through edge i to j
+# Integer variable yt to denote quantity of commodity t flowing through edge i to j
 @variable(m, yt[1:nodes, 1:nodes], Int)
 
 
@@ -104,14 +106,16 @@ end
 # Solve and Display
 ###################
 
+# Using tic(), toq() to measure the solving time
+tic()
 status = solve(m)
+timeTaken = toq()
+
 
 if status == :Infeasible
 	error("No solution found!")
 else
 	println("Objective value: ", getobjectivevalue(m))
-	#println("x = \n", getvalue(x))
-	#println("yt = \n", getvalue(yt))
 end
 
-
+println("Script ran for $timeTaken seconds")
