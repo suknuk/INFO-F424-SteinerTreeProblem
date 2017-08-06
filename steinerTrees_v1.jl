@@ -37,7 +37,8 @@ readArgumentFile(ARGS)
 
 ###
 # Constraint 3.1
-for i = 1:nodes
+
+for i = 1:nodes	
 	incomingFlow = 0
 	outgoingFlow = 0
 	for j = 1:nodes
@@ -71,7 +72,9 @@ for i = 1:nodes
 		###
 		# Constraint 3.2
 		# Multiply the binary value in order to allow a flow unit
-		# higher than one
+		# higher than one. This is necessary because the following
+		#@constraint(m, x[i,j] >= yt[i,j])
+		# will yield in wrong results in Julia
 		@constraint(m, x[i,j]*typemax(Int16) >= yt[i,j])
 
 		###
@@ -98,9 +101,6 @@ end
 
 @objective(m, Min, objectiveFunction())
 
-# Sum of Sum does not work like this?
-#@objective(m, Min, sum( sum(adjMatrix[i,j] * x[i,j]  , j:1:nodes) , i=1:nodes))
-
 
 ###################
 # Solve and Display
@@ -118,4 +118,4 @@ else
 	println("Objective value: ", getobjectivevalue(m))
 end
 
-println("Script ran for $timeTaken seconds")
+println("Solver took $timeTaken seconds to complete.")
