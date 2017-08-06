@@ -37,7 +37,6 @@ readArgumentFile(ARGS)
 
 ###
 # Constraint 3.1
-
 for i = 1:nodes	
 	incomingFlow = 0
 	outgoingFlow = 0
@@ -48,10 +47,11 @@ for i = 1:nodes
 		end
 	end
 
-	# First terminal node is the root node
+	# First terminal node is the root node z1
+	# But z1 is not in R1, so we do not add any constraints
 	# It has a outgoing flow of size(terminals) - 1
 	if i == terminals[1]
-		# This constraint is done achieved even without this line
+		# This constraint is achieved passively without this line
 		#@constraint(m, outgoingFlow == length(terminals) - 1)
 
 	else
@@ -65,7 +65,6 @@ for i = 1:nodes
 		@constraint(m, incomingFlow - outgoingFlow == flowDifference)
 	end
 end
-
 
 for i = 1:nodes
 	for j = 1:nodes
