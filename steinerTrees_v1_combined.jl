@@ -24,59 +24,67 @@ readArgumentFile(ARGS)
 # Constraint 3.4
 @variable(m, x[1:nodes, 1:nodes], Bin)
 
-# Integer variable y to denote quantity of commodity t flowing through edge i to j
-# y[i, j ,t]
-@variable(m, y[1:nodes, 1:nodes, 1:length(terminals)], Int)
+# Integer variable yt to denote quantity of commodity t flowing through edge i to j
+@variable(m, yt[1:nodes, 1:nodes], Int)
 
 # z1 - Root node
 z1 = terminals[1]
 # R1 - all steiner nodes without the root node z1
 R1 = terminals[2:end]
 
-
 #############
 # Constraints
 #############
 
 ###
+# Multicommodity flow constraints
+
+###
 # Constraint 3.1
-for t = 1:length(terminals)
-	zt = terminals[t]
-	for i = 1:nodes
-		incomingFlow = 0
-		outgoingFlow = 0
-		for j = 1:nodes
-			if i != j
-				incomingFlow += y[j,i,t]
-				outgoingFlow += y[i,j,t]
-			end
+for i = 1:nodes	
+	incomingFlow = 0
+	outgoingFlow = 0
+	for j = 1:nodes
+		if i != j
+			incomingFlow += yt[j,i]
+			outgoingFlow += yt[i,j]
 		end
+	end
 
-		if in(zt, R1)
-			if i == zt
-				@constraint(m, incomingFlow - outgoingFlow == 1)
-			end
-			if i != z1 && i != zt
-				@constraint(m, incomingFlow - outgoingFlow == 0)
-			end
+	# First terminal node is the root node z1
+	# But z1 is not in R1, so we do not add any constraints
+	# It has a outgoing flow of length(terminals) - 1
+	if i == z1
+		# This constraint is achieved passively without this line
+		#@constraint(m, outgoingFlow == length(terminals) - 1)
+
+	else
+		# Difference between incoming flow and outgoing flow
+		# 0 if non-terminal node
+		# 1 if terminal node - it 'consumes' one unit
+		flowDifference = 0
+		if in(i, terminals)
+			flowDifference = 1
 		end
+		@constraint(m, incomingFlow - outgoingFlow == flowDifference)
 	end
 end
 
-for t = 1:length(terminals)
-	zt = terminals[t]
-	if in(zt, R1)
-		for i = 1:nodes
-			for j = 1:nodes
-				# 3.2
-				@constraint(m, x[i,j] >= y[i,j,t])
-				# 3.3
-				@constraint(m, y[i,j,t] >= 0)
-			end
-		end
+for i = 1:nodes
+	for j = 1:nodes
+		###
+		# Constraint 3.2
+		# Multiply the binary value in order to allow a flow unit
+		# higher than one. This is necessary because the following
+		#@constraint(m, x[i,j] >= yt[i,j])
+		# will yield in wrong results in Julia
+		@constraint(m, x[i,j]*typemax(Int16) >= yt[i,j])
+
+		###
+		# Constraint 3.3
+		@constraint(m, yt[i,j] >= 0)
 	end
 end
-
 
 ###########
 # Objective
