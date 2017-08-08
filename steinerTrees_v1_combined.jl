@@ -45,7 +45,7 @@ for i = 1:nodes
 	incomingFlow = 0
 	outgoingFlow = 0
 	for j = 1:nodes
-		if i != j
+		if i != j && adjMatrix[i,j] != typemax(Int32)
 			incomingFlow += yt[j,i]
 			outgoingFlow += yt[i,j]
 		end
@@ -72,6 +72,11 @@ end
 
 for i = 1:nodes
 	for j = 1:nodes
+		
+		if i == j || adjMatrix[i,j] == typemax(Int32)
+			continue
+		end
+
 		###
 		# Constraint 3.2
 		# Multiply the binary value in order to allow a flow unit

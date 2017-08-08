@@ -46,7 +46,7 @@ for t = 1:length(terminals)
 		incomingFlow = 0
 		outgoingFlow = 0
 		for j = 1:nodes
-			if i != j
+			if i != j && adjMatrix[i,j] != typemax(Int32)
 				incomingFlow += y[j,i,t]
 				outgoingFlow += y[i,j,t]
 			end
@@ -68,6 +68,11 @@ for t = 1:length(terminals)
 	if in(zt, R1)
 		for i = 1:nodes
 			for j = 1:nodes
+				
+				if adjMatrix[i,j] == typemax(Int32)
+					continue
+				end
+
 				# 3.2
 				@constraint(m, x[i,j] >= y[i,j,t])
 				# 3.3
