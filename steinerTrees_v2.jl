@@ -21,7 +21,7 @@ readArgumentFile(ARGS)
 # Variables
 ###########
 # Binary variable x to indicate if edge between nodes i and j was selected
-# Constraint 4.6
+# Constraint 6
 @variable(m, x[1:nodes, 1:nodes], Bin)
 
 # Integer variables y to denote quantity of flow through edge i to j
@@ -41,27 +41,62 @@ R1 = terminals[2:end]
 #############
 
 ###
-# Constraint 4.1
+# Constraints 1 - 3
 for k = 1:length(terminals)
-	for l = 1:length(terminals)	
+	for l = 1:length(terminals)
+		if k == l
+			continue
+		end
 		zk = terminals[k]
 		zl = terminals[l]
 		if in(zk, R1) && in(zl, R1)	
 			for i = 1:nodes
-				incomingFlow = 0
-				outgoingFlow = 0
+				incomingFlow1 = outgoingFlow1 = 0
+				incomingFlow2 = outgoingFlow2 = 0
+				incomingFlow3 = outgoingFlow3 = 0
 				for j = 1:nodes
-					if i != j
-						incomingFlow += yhat[j,i,k,l]
-						outgoingFlow += yhat[i,j,k,l]
+					if i != j && adjMatrix[i,j] != typemax(Int32)
+						###
+						# Constraint 1 flow
+						incomingFlow1 += yhat[j,i,k,l]
+						outgoingFlow1 += yhat[i,j,k,l]
+						
+						###
+						# Constraint 2 flow
+						incomingFlow2 += yhat[j,i,k,l] + yhat_left[j,i,k,l]
+						outgoingFlow2 += yhat[i,j,k,l] + yhat_left[i,j,k,l]
+						
+						###
+						# Constraint 3 flow
+						incomingFlow3 += yhat[j,i,k,l] + yhat_right[j,i,k,l]
+						outgoingFlow3 += yhat[i,j,k,l] + yhat_right[i,j,k,l]
 					end
 				end
 			
+				###
+				# Constraint 4.1
 				if i == z1
-					@constraint(m, incomingFlow - outgoingFlow >= -1)
+					@constraint(m, incomingFlow1 - outgoingFlow1 >= -1)
 				else
-					@constraint(m, incomingFlow - outgoingFlow == 0)
+					@constraint(m, incomingFlow1 - outgoingFlow1 >= 0)
 				end
+
+				###
+				# Constraint 4.2
+				if i == zk
+					@constraint(m, incomingFlow2 - outgoingFlow2 == 1)
+				elseif (i != z1) && (i != zk)
+					@constraint(m, incomingFlow2 - outgoingFlow2 == 0)
+				end
+				
+				###
+				# Constraint 4.3
+				if i == zl
+					@constraint(m, incomingFlow3 - outgoingFlow3 == 1)
+				elseif (i != z1) && (i != zl)
+					@constraint(m, incomingFlow3 - outgoingFlow3 == 0)
+				end
+				
 				
 			end
 		end
@@ -69,98 +104,27 @@ for k = 1:length(terminals)
 end
 
 ###
-# Constraint 4.2
+# Constraints 4 and 5
 for k = 1:length(terminals)
-	for l = 1:length(terminals)	
+	for l = 1:length(terminals)
+		if k == l
+			continue
+		end
 		zk = terminals[k]
 		zl = terminals[l]
 		if in(zk, R1) && in(zl, R1)
 			for i = 1:nodes
-				incomingFlow = 0
-				outgoingFlow = 0
 				for j = 1:nodes
-					if i != j
-						incomingFlow += yhat[j,i,k,l] + yhat_left[j,i,k,l]
-						outgoingFlow += yhat[i,j,k,l] + yhat_left[i,j,k,l]
+					if (adjMatrix[i,j] == typemax(Int32)) || (i == j)
+						continue
 					end
-				end
-			
-				if i == zk
-					@constraint(m, incomingFlow - outgoingFlow == 1)
-				elseif i != z1
-					@constraint(m, incomingFlow - outgoingFlow == 0)
-				end
-			end
-		end
-	end
-end
-
-###
-# Constraint 4.3
-for k = 1:length(terminals)
-	for l = 1:length(terminals)	
-		zk = terminals[k]
-		zl = terminals[l]
-		if in(zk, R1) && in(zl, R1)
-			for i = 1:nodes
-				incomingFlow = 0
-				outgoingFlow = 0
-				for j = 1:nodes
-					if i != j
-						incomingFlow += yhat[j,i,k,l] + yhat_right[j,i,k,l]
-						outgoingFlow += yhat[i,j,k,l] + yhat_right[i,j,k,l]
-					end
-				end
-			
-				if i == zl
-					@constraint(m, incomingFlow - outgoingFlow == 1)
-				elseif i != z1
-					@constraint(m, incomingFlow - outgoingFlow == 0)
-				end
-			end
-		end
-	end
-end
-
-#=
-for t = 1:length(terminals)
-	zt = terminals[t]
-	for i = 1:nodes
-		incomingFlow = 0
-		outgoingFlow = 0
-		for j = 1:nodes
-			if i != j
-				incomingFlow += y[j,i,t]
-				outgoingFlow += y[i,j,t]
-			end
-		end
-
-		if in(zt, R1)
-			if i == zt
-				@constraint(m, incomingFlow - outgoingFlow == 1)
-			end
-			if i != z1 && i != zt
-				@constraint(m, incomingFlow - outgoingFlow == 0)
-			end
-		end
-	end
-end
-=#
-
-for k = 1:length(terminals)
-	for l = 1:length(terminals)	
-		zk = terminals[k]
-		zl = terminals[l]
-		if in(zk, R1) && in(zl, R1)
-			for i = 1:nodes
-				for j = 1:nodes
 					###
-					# Constraint 4.4
+					# Constraint 4
 					y_flow = yhat[i,j,k,l] + yhat_left[i,j,k,l] + yhat_right[i,j,k,l]
 					@constraint(m, y_flow <= x[i,j])
 					
 					###
-					# Constraint 4.5
+					# Constraint 5
 					@constraint(m, yhat[i,j,k,l] >= 0)
 					@constraint(m, yhat_left[i,j,k,l] >= 0)
 					@constraint(m, yhat_right[i,j,k,l] >= 0)
@@ -192,6 +156,8 @@ end
 ###################
 # Solve and Display
 ###################
+
+println("Number of constraints : ",MathProgBase.numconstr(m))
 
 # Using tic(), toq() to measure the solving time
 tic()

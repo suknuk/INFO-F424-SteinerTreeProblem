@@ -21,7 +21,7 @@ readArgumentFile(ARGS)
 # Variables
 ###########
 # Binary variable x to indicate if edge between nodes i and j was selected
-# Constraint 3.4
+# Constraint 4
 @variable(m, x[1:nodes, 1:nodes], Bin)
 
 # Integer variable y to denote quantity of commodity t flowing through edge i to j
@@ -39,7 +39,7 @@ R1 = terminals[2:end]
 #############
 
 ###
-# Constraint 3.1
+# Constraint 1
 for t = 1:length(terminals)
 	zt = terminals[t]
 	for i = 1:nodes
@@ -63,6 +63,8 @@ for t = 1:length(terminals)
 	end
 end
 
+###
+# Constraints 2 and 3
 for t = 1:length(terminals)
 	zt = terminals[t]
 	if in(zt, R1)
@@ -73,9 +75,12 @@ for t = 1:length(terminals)
 					continue
 				end
 
-				# 3.2
+				###
+				# Constraint 2
 				@constraint(m, x[i,j] >= y[i,j,t])
-				# 3.3
+				
+				###
+				# Constraint 3
 				@constraint(m, y[i,j,t] >= 0)
 			end
 		end
@@ -104,6 +109,8 @@ end
 ###################
 # Solve and Display
 ###################
+
+println("Number of constraints : ",MathProgBase.numconstr(m))
 
 # Using tic(), toq() to measure the solving time
 tic()

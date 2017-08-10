@@ -198,6 +198,8 @@ end
 # Solve and Display
 ###################
 
+println("Number of constraints : ",MathProgBase.numconstr(m))
+
 # Using tic(), toq() to measure the solving time
 tic()
 status = solve(m)
