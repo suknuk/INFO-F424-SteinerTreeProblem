@@ -35,14 +35,24 @@ z1 = terminals[1]
 # R1 - all steiner nodes without the root node z1
 R1 = terminals[2:end]
 
+## test
+#zk = terminals[2]
+#zl = terminals[3]
+
+chosenK = 0
 
 #############
 # Constraints
 #############
 
+hasConstraints = false
+
 ###
 # Constraints 1 - 3
 for k = 1:length(terminals)
+	if hasConstraints
+		continue
+	end
 	for l = 1:length(terminals)
 		if k == l
 			continue
@@ -50,6 +60,8 @@ for k = 1:length(terminals)
 		zk = terminals[k]
 		zl = terminals[l]
 		if in(zk, R1) && in(zl, R1)	
+			hasConstraints = true
+			chosenK = k
 			for i = 1:nodes
 				incomingFlow1 = outgoingFlow1 = 0
 				incomingFlow2 = outgoingFlow2 = 0
@@ -74,7 +86,7 @@ for k = 1:length(terminals)
 				end
 			
 				###
-				# Constraint 4.1
+				# Constraint 1
 				if i == z1
 					@constraint(m, incomingFlow1 - outgoingFlow1 >= -1)
 				else
@@ -82,7 +94,7 @@ for k = 1:length(terminals)
 				end
 
 				###
-				# Constraint 4.2
+				# Constraint 2
 				if i == zk
 					@constraint(m, incomingFlow2 - outgoingFlow2 == 1)
 				elseif (i != z1) && (i != zk)
@@ -90,7 +102,7 @@ for k = 1:length(terminals)
 				end
 				
 				###
-				# Constraint 4.3
+				# Constraint 3
 				if i == zl
 					@constraint(m, incomingFlow3 - outgoingFlow3 == 1)
 				elseif (i != z1) && (i != zl)
@@ -106,6 +118,9 @@ end
 ###
 # Constraints 4 and 5
 for k = 1:length(terminals)
+	if k != chosenK
+		continue
+	end
 	for l = 1:length(terminals)
 		if k == l
 			continue
