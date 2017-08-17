@@ -20,13 +20,13 @@ function displayHelp()
 	println("-f ; --file [path to .stp file]")
 	println("--formulation [PF|P2T|PF2]	| default: PF")
 	println("-v ; --verbose [true|false]	| default: false")
-	println("-s ; --saveresult [true|false]	| default: false")
+	println("-s ; --saveresult [filename]")
 end
 
 function readArgumentFile(arguments)
 	
 	hasInputFile = false
-	inputFile = ""
+	global inputFile = ""
 
 	global whichFormulation = "PF"
 
@@ -40,7 +40,7 @@ function readArgumentFile(arguments)
 		for i = 1:length(arguments)
 			arg = arguments[i]
 			if arg == "-f" || arg == "--file"
-				inputFile = arguments[i+1]
+				global inputFile = arguments[i+1]
 				hasInputFile = true
 				i=i+1
 			elseif arg == "--formulation"
@@ -60,11 +60,8 @@ function readArgumentFile(arguments)
 					global verbose = true
 				end
 			elseif arg == "-s" || arg == "--saveresult"
-				if arguments[i+1] == "false"
-					global saveResult = false
-				elseif arguments[i+1] == "true"
-					global saveResult = true
-				end
+				global saveResultFileName = arguments[i+1]
+				global saveResult = true
 			elseif arg == "-h" || arg == "--help"
 				displayHelp()
 				exit()
@@ -76,9 +73,6 @@ function readArgumentFile(arguments)
 		error("Expected input file. Type -h or --help for help")
 	end
 
-	# Script accepts the first argument as file input
-	#inputFile = arguments[1]
-	
 	# State variable to determine the current read state of a STP format file
 	# in the form of SECTION Comment/Graph/Terminals ... END
 	#

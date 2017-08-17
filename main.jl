@@ -55,8 +55,10 @@ end
 # Solve and Display
 ###################
 
+nbConstraints = MathProgBase.numconstr(m)
+
 if !verbose
-	println("Number of constraints : ",MathProgBase.numconstr(m))
+	println("Number of constraints : ", nbConstraints)
 end
 
 # Using tic(), toq() to measure the solving time
@@ -64,15 +66,29 @@ tic()
 status = solve(m)
 timeTaken = toq()
 
+objVal = getobjectivevalue(m)
 
 if status == :Infeasible
-	error("No solution found!")
+	#error("No solution found!")
+	if !verbose
+		println("Error: No solution found")
+	end
 else
 	if !verbose
-		println("Objective value: ", getobjectivevalue(m))
+		println("Objective value: ", objVal )
 	end
 end
 
 if !verbose
 	println("Solver took $timeTaken seconds to complete.")
+end
+
+if saveResult
+	f = open(saveResultFileName,"a")
+	write(f, "$inputFile\t")
+	write(f, "$whichFormulation\t")
+	write(f, "$timeTaken\t")
+	write(f, "$nbConstraints\t")	
+	write(f, "$objVal\n")
+	close(f)
 end
