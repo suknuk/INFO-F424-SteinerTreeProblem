@@ -64,7 +64,7 @@ end
 # Using tic(), toq() to measure the solving time
 tic()
 status = solve(m)
-timeTaken = toq()
+timeTaken = floor(toq()*100) / 100
 
 objVal = getobjectivevalue(m)
 
