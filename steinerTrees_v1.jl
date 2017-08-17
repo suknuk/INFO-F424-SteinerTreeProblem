@@ -71,7 +71,7 @@ for t = 1:length(terminals)
 		for i = 1:nodes
 			for j = 1:nodes
 				
-				if adjMatrix[i,j] == typemax(Int32)
+				if adjMatrix[i,j] == typemax(Int32) || i == j
 					continue
 				end
 

@@ -16,16 +16,68 @@
 # Adjacency Matrix
 # matrix adjMatrix	- 2d Int64 matrix holding the graph data
 
+function displayHelp()
+	println("-f ; --file [path to .stp file]")
+	println("--formulation [PF|P2T|PF2]	| default: PF")
+	println("-v ; --verbose [true|false]	| default: false")
+	println("-s ; --saveresult [true|false]	| default: false")
+end
 
 function readArgumentFile(arguments)
 	
+	hasInputFile = false
+	inputFile = ""
+
+	global whichFormulation = "PF"
+
+	global verbose = false
+	global saveResult = false
+
 	# argument length checking
-	if length(arguments) != 1
-		error("LALAExpected one argument: a Steiner Tree Problem - .stp - file")
+	if length(arguments) == 0
+		error("Expected arguments. Type -h or --help for help")
+	else
+		for i = 1:length(arguments)
+			arg = arguments[i]
+			if arg == "-f" || arg == "--file"
+				inputFile = arguments[i+1]
+				hasInputFile = true
+				i=i+1
+			elseif arg == "--formulation"
+				if arguments[i+1] == "PF"
+					global whichFormulation = "PF"
+				elseif arguments[i+1] == "P2T"
+					global whichFormulation = "P2T"
+				elseif arguments[i+1] == "PF2"
+					global whichFormulation = "PF2"
+				else
+					println("Unknown formulation, using default formulation PF")
+				end
+			elseif arg == "-v" || arg == "--verbose"
+				if arguments[i+1] == "false"
+					global verbose = false
+				elseif arguments[i+1] == "true"
+					global verbose = true
+				end
+			elseif arg == "-s" || arg == "--saveresult"
+				if arguments[i+1] == "false"
+					global saveResult = false
+				elseif arguments[i+1] == "true"
+					global saveResult = true
+				end
+			elseif arg == "-h" || arg == "--help"
+				displayHelp()
+				exit()
+			end
+		end
+	end
+
+	if !hasInputFile
+		error("Expected input file. Type -h or --help for help")
 	end
 
 	# Script accepts the first argument as file input
-	inputFile = arguments[1]
+	#inputFile = arguments[1]
 	
 	# State variable to determine the current read state of a STP format file
 	# in the form of SECTION Comment/Graph/Terminals ... END
@@ -128,7 +180,9 @@ function readArgumentFile(arguments)
 
 	# Close the input stream
 	close(f)
-
-	println("Input: Nodes $(nodes), edges $(edges), terminals $(length(terminals))")
+	
+	if !verbose
+		println("Input: Nodes $(nodes), edges $(edges), terminals $(length(terminals))")
+	end
 end
 # readArgumentFile end
