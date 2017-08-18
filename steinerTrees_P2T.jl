@@ -12,13 +12,14 @@ function constraintsP2T()
 	###########
 	# Binary variable x to indicate if edge between nodes i and j was selected
 	# Constraint 6
-	# @variable(m, x[1:nodes, 1:nodes], Bin)
+	@variable(m, x[1:nodes, 1:nodes], Bin)
 
 	# Integer variables y to denote quantity of flow through edge i to j
 	# y[i, j ,k, l]
-	@variable(m, yhat[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)], Int)
-	@variable(m, yhat_left[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)], Int)
-	@variable(m, yhat_right[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)], Int)
+	# Constraint 5 - included
+	@variable(m, yhat[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)] >= 0, Int)
+	@variable(m, yhat_left[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)] >= 0, Int)
+	@variable(m, yhat_right[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)] >= 0, Int)
 
 	# z1 - Root node
 	z1 = terminals[1]
@@ -112,7 +113,7 @@ function constraintsP2T()
 		end
 
 		###
-		# Constraints 4 and 5
+		# Constraint 4
 		for i = 1:nodes
 			for j = 1:nodes
 				if (adjMatrix[i,j] == typemax(Int32)) || (i == j)
@@ -121,13 +122,26 @@ function constraintsP2T()
 				###
 				# Constraint 4
 				@constraint(m, yhat[i,j,k,l] + yhat_left[i,j,k,l] + yhat_right[i,j,k,l] <= x[i,j])
-				
-				###
-				# Constraint 5
-				@constraint(m, yhat[i,j,k,l] >= 0)
-				@constraint(m, yhat_left[i,j,k,l] >= 0)
-				@constraint(m, yhat_right[i,j,k,l] >= 0)
 			end
 		end
 	end
+	
+	###########
+	# Objective
+	###########
+
+	# Take the sum of each chosen weight
+	function objectiveFunction()
+		total = 0
+		for i = 1:nodes	
+			for j = 1:nodes
+				if i != j
+					total += x[i,j] * adjMatrix[i,j]
+				end
+			end
+		end
+		return total
+	end
+
+	@objective(m, Min, objectiveFunction())
 end

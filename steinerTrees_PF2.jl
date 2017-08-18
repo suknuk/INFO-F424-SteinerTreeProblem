@@ -12,13 +12,14 @@ function constraintsPF2()
 	###########
 	# Binary variable x to indicate if edge between nodes i and j was selected
 	# Constraint 8
-	# @variable(m, x[1:nodes, 1:nodes], Bin)
+	@variable(m, x[1:nodes, 1:nodes], Bin)
 
 	# Integer variables y to denote quantity of flow through edge i to j
 	# y[i, j ,t]
 	# yhat[i, j ,k, l]
-	@variable(m, y[1:nodes, 1:nodes, 1:length(terminals)], Int)
-	@variable(m, yhat[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)], Int)
+	# Constraint 7 lowerbound included
+	@variable(m, y[1:nodes, 1:nodes, 1:length(terminals)], Int, lowerbound=0)
+	@variable(m, yhat[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)], Int, lowerbound=0)
 
 	# z1 - Root node
 	z1 = terminals[1]
@@ -138,31 +139,22 @@ function constraintsPF2()
 		@constraint(m, incoming - outgoing <= 0)
 	end
 
+	###########
+	# Objective
+	###########
 
-	###
-	# Constraint 7
-	for i = 1:nodes
-		for j = 1:nodes
-			if i == j || adjMatrix[i,j] == typemax(Int32)
-				continue
-			end
-
-			for k = 1:length(terminals)
-				zk = terminals[k]
-				for l = 1:length(terminals)
-					if k == l
-						continue
-					end
-					zl = terminals[l]
-					if in(zk,R1) && in(zl,R1)
-						@constraint(m, yhat[i,j,k,l] >= 0)
-					end
-				end
-				if in(zk,R1)
-					@constraint(m, y[i,j,k] >= 0)
+	# Take the sum of each chosen weight
+	function objectiveFunction()
+		total = 0
+		for i = 1:nodes	
+			for j = 1:nodes
+				if i != j
+					total += x[i,j] * adjMatrix[i,j]
 				end
 			end
-
 		end
+		return total
 	end
+
+	@objective(m, Min, objectiveFunction())
 end
