@@ -18,19 +18,24 @@ readArgumentFile(ARGS)
 # This occurs in every formulation and only needs to be declared here
 @variable(m, x[1:nodes, 1:nodes], Bin)
 
-###
+####################################
 # Including the various formulations
-include("steinerTrees_v1_test.jl")
+####################################
+include("steinerTrees_v1.jl")
+include("steinerTrees_v2.jl")
 include("steinerTrees_v3.jl")
 
-###
+##################################################
 # Adding constraints from the selected formulation
+##################################################
 if whichFormulation == "PF"
 	constraintsPF()
 elseif whichFormulation == "P2T"
-	error("Implement me")
+	constraintsP2T()
 elseif whichFormulation == "PF2"
 	constraintsPF2()
+else
+	error("Formulation $whichFormulation not implemented")
 end
 
 ###########
@@ -42,7 +47,9 @@ function objectiveFunction()
 	total = 0
 	for i = 1:nodes	
 		for j = 1:nodes
-			total += x[i,j] * adjMatrix[i,j]
+			if i != j
+				total += x[i,j] * adjMatrix[i,j]
+			end
 		end
 	end
 	return total

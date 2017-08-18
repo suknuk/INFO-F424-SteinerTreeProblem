@@ -44,15 +44,7 @@ function readArgumentFile(arguments)
 				hasInputFile = true
 				i=i+1
 			elseif arg == "--formulation"
-				if arguments[i+1] == "PF"
-					global whichFormulation = "PF"
-				elseif arguments[i+1] == "P2T"
-					global whichFormulation = "P2T"
-				elseif arguments[i+1] == "PF2"
-					global whichFormulation = "PF2"
-				else
-					println("Unknown formulation, using default formulation PF")
-				end
+				global whichFormulation = arguments[i+1]
 			elseif arg == "-v" || arg == "--verbose"
 				if arguments[i+1] == "false"
 					global verbose = false

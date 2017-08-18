@@ -1,0 +1,47 @@
+H/W path       Device       Class          Description
+======================================================
+                            system         MS-7972 (Default string)
+/0                          bus            B150M MORTAR (MS-7972)
+/0/0                        memory         64KiB BIOS
+/0/3c                       memory         128KiB L1 cache
+/0/3d                       memory         128KiB L1 cache
+/0/3e                       memory         1MiB L2 cache
+/0/3f                       memory         6MiB L3 cache
+/0/40                       processor      Intel(R) Core(TM) i5-6500 CPU @ 3.20GHz
+/0/41                       memory         16GiB System Memory
+/0/41/0                     memory         [empty]
+/0/41/1                     memory         [empty]
+/0/41/2                     memory         [empty]
+/0/41/3                     memory         16GiB DIMM Synchronous 2133 MHz (0,5 ns)
+/0/100                      bridge         Sky Lake Host Bridge/DRAM Registers
+/0/100/2                    display        Sky Lake Integrated Graphics
+/0/100/8                    generic        Sky Lake Gaussian Mixture Model
+/0/100/14                   bus            Sunrise Point-H USB 3.0 xHCI Controller
+/0/100/14/0    usb2         bus            xHCI Host Controller
+/0/100/14/1    usb1         bus            xHCI Host Controller
+/0/100/14/1/3               input          USB-PS/2 Optical Mouse
+/0/100/14/1/4               input          USB Keyboard
+/0/100/14/1/5               communication  ALE-L21
+/0/100/14.2                 generic        Sunrise Point-H Thermal subsystem
+/0/100/15                   generic        Sunrise Point-H LPSS I2C Controller #0
+/0/100/15.1                 generic        Sunrise Point-H LPSS I2C Controller #1
+/0/100/16                   communication  Sunrise Point-H CSME HECI #1
+/0/100/17                   storage        Sunrise Point-H SATA controller [AHCI mode]
+/0/100/1d                   bridge         Sunrise Point-H PCI Express Root Port #9
+/0/100/1d.1                 bridge         Sunrise Point-H PCI Express Root Port #10
+/0/100/1d.1/0  enp2s0       network        RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller
+/0/100/1e                   generic        Sunrise Point-H LPSS UART #0
+/0/100/1f                   bridge         Sunrise Point-H LPC Controller
+/0/100/1f.2                 memory         Memory controller
+/0/100/1f.3                 multimedia     Sunrise Point-H HD Audio
+/0/100/1f.4                 bus            Sunrise Point-H SMBus
+/0/1           scsi4        storage        
+/0/1/0.0.0     /dev/sda     disk           256GB LITEONIT LCS-256
+/0/1/0.0.0/1   /dev/sda1    volume         223GiB EXT4 volume
+/0/1/0.0.0/2   /dev/sda2    volume         4767MiB Linux swap volume
+/0/2           scsi5        storage        
+/0/2/0.0.0     /dev/sdb     disk           128GB Intenso SSD Sata
+/0/2/0.0.0/1   /dev/sdb1    volume         119GiB EXT4 volume
+/1                          power          To Be Filled By O.E.M.
+/2             enp0s20f0u5  network        Ethernet interface
+/3             vethb028eed  network        Ethernet interface
