@@ -14,12 +14,6 @@ function constraintsP2T()
 	# Constraint 6
 	@variable(m, x[1:nodes, 1:nodes], Bin)
 
-	# Integer variables y to denote quantity of flow through edge i to j
-	# y[i, j ,k, l]
-	# Constraint 5 - included
-	@variable(m, yhat[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)] >= 0, Int)
-	@variable(m, yhat_left[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)] >= 0, Int)
-	@variable(m, yhat_right[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)] >= 0, Int)
 
 	# z1 - Root node
 	z1 = terminals[1]
@@ -49,14 +43,20 @@ function constraintsP2T()
 		push!(zkList,zkList[1])
 		push!(kList,kList[1])
 	end
-
+	
+	# Integer variables y to denote quantity of flow through edge i to j
+	# y[i, j ,kl]
+	# Constraint 5 - included
+	@variable(m, yhat[1:nodes, 1:nodes, 1:length(zlList)] >= 0, Int)
+	@variable(m, yhat_left[1:nodes, 1:nodes, 1:length(zlList)] >= 0, Int)
+	@variable(m, yhat_right[1:nodes, 1:nodes, 1:length(zlList)] >= 0, Int)
 
 	#############
 	# Constraints
 	#############
 
 	###
-	# Constraints 1 - 3
+	# Constraints 1 - 4
 	for ti = 1:length(zlList)
 		zk = zkList[ti]
 		zl = zlList[ti]
@@ -72,18 +72,18 @@ function constraintsP2T()
 				if i != j && adjMatrix[i,j] != typemax(Int32)
 					###
 					# Constraint 1 flow
-					incomingFlow1 += yhat[j,i,k,l]
-					outgoingFlow1 += yhat[i,j,k,l]
+					incomingFlow1 += yhat[j,i,ti]
+					outgoingFlow1 += yhat[i,j,ti]
 					
 					###
 					# Constraint 2 flow
-					incomingFlow2 += yhat[j,i,k,l] + yhat_left[j,i,k,l]
-					outgoingFlow2 += yhat[i,j,k,l] + yhat_left[i,j,k,l]
+					incomingFlow2 += yhat[j,i,ti] + yhat_left[j,i,ti]
+					outgoingFlow2 += yhat[i,j,ti] + yhat_left[i,j,ti]
 					
 					###
 					# Constraint 3 flow
-					incomingFlow3 += yhat[j,i,k,l] + yhat_right[j,i,k,l]
-					outgoingFlow3 += yhat[i,j,k,l] + yhat_right[i,j,k,l]
+					incomingFlow3 += yhat[j,i,ti] + yhat_right[j,i,ti]
+					outgoingFlow3 += yhat[i,j,ti] + yhat_right[i,j,ti]
 				end
 			end
 		
@@ -121,7 +121,7 @@ function constraintsP2T()
 				end
 				###
 				# Constraint 4
-				@constraint(m, yhat[i,j,k,l] + yhat_left[i,j,k,l] + yhat_right[i,j,k,l] <= x[i,j])
+				@constraint(m, yhat[i,j,ti] + yhat_left[i,j,ti] + yhat_right[i,j,ti] <= x[i,j])
 			end
 		end
 	end

@@ -14,12 +14,6 @@ function constraintsPF2()
 	# Constraint 8
 	@variable(m, x[1:nodes, 1:nodes], Bin)
 
-	# Integer variables y to denote quantity of flow through edge i to j
-	# y[i, j ,t]
-	# yhat[i, j ,k, l]
-	# Constraint 7 lowerbound included
-	@variable(m, y[1:nodes, 1:nodes, 1:length(terminals)] >= 0, Int)
-	@variable(m, yhat[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)] >= 0, Int)
 
 	# z1 - Root node
 	z1 = terminals[1]
@@ -50,6 +44,13 @@ function constraintsPF2()
 		push!(kList,kList[1])
 	end
 
+	# Integer variables y to denote quantity of flow through edge i to j
+	# y[i, j ,t]
+	# yhat[i, j ,kl]
+	# Constraint 7 lowerbound included
+	@variable(m, y[1:nodes, 1:nodes, 1:length(terminals)] >= 0, Int)
+	@variable(m, yhat[1:nodes, 1:nodes, 1:length(zlList)] >= 0, Int)
+	
 	#############
 	# Constraints
 	#############
@@ -94,20 +95,20 @@ function constraintsPF2()
 				if i != j && adjMatrix[i,j] != typemax(Int32)
 					###
 					# Constraint 2 flow
-					incomingFlow2 += yhat[j,i,k,l]
-					outgoingFlow2 += yhat[i,j,k,l]
+					incomingFlow2 += yhat[j,i,ti]
+					outgoingFlow2 += yhat[i,j,ti]
 
 					###
 					# Constraint 3
-					@constraint(m, yhat[i,j,k,l] <= y[i,j,k])
+					@constraint(m, yhat[i,j,ti] <= y[i,j,k])
 
 					###
 					# Constraint 4
-					@constraint(m, yhat[i,j,k,l] <= y[i,j,l])
+					@constraint(m, yhat[i,j,ti] <= y[i,j,l])
 					
 					###
 					# Constraint 5
-					@constraint(m, y[i,j,k] + y[i,j,l] - yhat[i,j,k,l] <= x[i,j])
+					@constraint(m, y[i,j,k] + y[i,j,l] - yhat[i,j,ti] <= x[i,j])
 				end
 			end
 		
