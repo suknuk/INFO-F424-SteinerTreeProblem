@@ -18,14 +18,37 @@ function constraintsPF2()
 	# y[i, j ,t]
 	# yhat[i, j ,k, l]
 	# Constraint 7 lowerbound included
-	@variable(m, y[1:nodes, 1:nodes, 1:length(terminals)], Int, lowerbound=0)
-	@variable(m, yhat[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)], Int, lowerbound=0)
+	@variable(m, y[1:nodes, 1:nodes, 1:length(terminals)] >= 0, Int)
+	@variable(m, yhat[1:nodes, 1:nodes, 1:length(terminals), 1:length(terminals)] >= 0, Int)
 
 	# z1 - Root node
 	z1 = terminals[1]
 	# R1 - all steiner nodes without the root node z1
 	R1 = terminals[2:end]
 
+	## k and l Lists pairs
+	zlList = Int64[]
+	zkList = Int64[]
+	lList = Int64[]
+	kList = Int64[]
+
+	whichList = true
+
+	for i = 1:length(R1)
+		if whichList
+			push!(zlList,R1[i])
+			push!(lList,i+1)
+		else
+			push!(zkList,R1[i])
+			push!(kList,i+1)
+		end
+		whichList = !whichList
+	end
+
+	if length(zlList) != length(zkList)
+		push!(zkList,zkList[1])
+		push!(kList,kList[1])
+	end
 
 	#############
 	# Constraints
@@ -55,73 +78,49 @@ function constraintsPF2()
 		end
 	end
 
-	###
-	# Constraint 2
-	for k = 1:length(terminals)
-		for l = 1:length(terminals)
-			if k == l
-				continue
-			end
-			zk = terminals[k]
-			zl = terminals[l]
-			if in(zk, R1) && in(zl, R1)
-				for i = 1:nodes
-					incomingFlow = 0
-					outgoingFlow = 0
-					for j = 1:nodes
-						if (adjMatrix[i,j] != typemax(Int32)) && (i != j)
-							incomingFlow += yhat[j,i,k,l]
-							outgoingFlow += yhat[i,j,k,l]
-						end
-					end
+
+	##############
+	# Constraints 2,3,4,5
+	for ti = 1:length(zlList)
+		zk = zkList[ti]
+		zl = zlList[ti]
+		
+		k = kList[ti]
+		l = lList[ti]
+		
+		for i = 1:nodes
+			incomingFlow2 = outgoingFlow2 = 0
+			for j = 1:nodes
+				if i != j && adjMatrix[i,j] != typemax(Int32)
+					###
+					# Constraint 2 flow
+					incomingFlow2 += yhat[j,i,k,l]
+					outgoingFlow2 += yhat[i,j,k,l]
+
+					###
+					# Constraint 3
+					@constraint(m, yhat[i,j,k,l] <= y[i,j,k])
+
+					###
+					# Constraint 4
+					@constraint(m, yhat[i,j,k,l] <= y[i,j,l])
 					
-					if i == z1
-						@constraint(m, incomingFlow - outgoingFlow >= -1)
-					else
-						@constraint(m, incomingFlow - outgoingFlow >= 0)
-					end
-						
+					###
+					# Constraint 5
+					@constraint(m, y[i,j,k] + y[i,j,l] - yhat[i,j,k,l] <= x[i,j])
 				end
 			end
-		end
-	end
-
-	###
-	# Constraints 3,4,5
-	for i = 1:nodes
-		for j = 1:nodes
-			if i == j || adjMatrix[i,j] == typemax(Int32)
-				continue
-			end
-
-			for k = 1:length(terminals)
-				for l = 1:length(terminals)
-					if k == l 
-						continue
-					end
-					zk = terminals[k]
-					zl = terminals[l]
-					if in(zk,R1) && in(zl,R1)
-						
-						###
-						# Constraint 3
-						@constraint(m, yhat[i,j,k,l] <= y[i,j,k])
-						
-						###
-						# Constraint 4
-						@constraint(m, yhat[i,j,k,l] <= y[i,j,l])
-						
-						###
-						# Constraint 5
-						@constraint(m, y[i,j,k] + y[i,j,l] - yhat[i,j,k,l] <= x[i,j])
-					end
-				end
+		
+			###
+			# Constraint 2
+			if i == z1
+				@constraint(m, incomingFlow2 - outgoingFlow2 >= -1)
+			else
+				@constraint(m, incomingFlow2 - outgoingFlow2 >= 0)
 			end
 
 		end
 	end
-
-
 
 	###
 	# Constraint 6
