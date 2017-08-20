@@ -18,8 +18,9 @@
 
 function displayHelp()
 	println("-f ; --file [path to .stp file]")
-	println("--formulation [PF|P2T|PF2]	| default: PF")
-	println("-v ; --verbose [true|false]	| default: false")
+	println("--formulation [PF|P2T|PF2]		| default: PF")
+	println("-m ; --model [GLPK|Cbc|Gurobi|CPLEX]	| default: GLPK")
+	println("-v ; --verbose [true|false]		| default: false")
 	println("-s ; --saveresult [filename]")
 end
 
@@ -33,6 +34,8 @@ function readArgumentFile(arguments)
 	global verbose = false
 	global saveResult = false
 
+	hasModel = false
+
 	# argument length checking
 	if length(arguments) == 0
 		error("Expected arguments. Type -h or --help for help")
@@ -45,6 +48,17 @@ function readArgumentFile(arguments)
 				i=i+1
 			elseif arg == "--formulation"
 				global whichFormulation = arguments[i+1]
+			elseif arg == "-m" || arg == "--model"
+				arg2 = arguments[i+1]
+				if arg2 == "GLPK"
+					global m = Model(solver = GLPKSolverMIP())
+					hasModel = true
+				elseif arg2 == "Cbc"
+					global m = Model(solver = CbcSolver())
+					hasModel = true
+				else
+					error("Model not recognised")
+				end
 			elseif arg == "-v" || arg == "--verbose"
 				if arguments[i+1] == "false"
 					global verbose = false
@@ -63,6 +77,10 @@ function readArgumentFile(arguments)
 
 	if !hasInputFile
 		error("Expected input file. Type -h or --help for help")
+	end
+
+	if !hasModel
+		global m = Model(solver = CbcSolver())
 	end
 
 	# State variable to determine the current read state of a STP format file

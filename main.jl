@@ -8,8 +8,10 @@
 ########################################
 
 using JuMP
+using GLPK
+using GLPKMathProgInterface
+using Cbc
 
-global m = Model()
 
 include("stpInterpreter.jl")
 readArgumentFile(ARGS)
